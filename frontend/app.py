@@ -26,9 +26,9 @@ from utils.layout_engine import place_furniture
 # Authentication
 credentials = {
     "usernames": {
-        "demo_user": {
-            "name": st.secrets["credentials"]["usernames"]["demo_user"]["name"],
-            "password": st.secrets["credentials"]["usernames"]["demo_user"]["password"],
+        os.environ["APP_USERNAME"]: {
+            "name": os.environ["APP_NAME"],
+            "password": os.environ["APP_PASSWORD_HASH"],
         }
     }
 }

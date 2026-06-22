@@ -1,7 +1,3 @@
 import streamlit_authenticator as stauth
 
-passwords = ["MyStrongPassword123"]
-
-hashed_passwords = stauth.Hasher(passwords).generate()
-
-print(hashed_passwords)
+print(stauth.Hasher(["Vansh2468"]).generate())
