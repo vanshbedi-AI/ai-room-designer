@@ -1,50 +1,20 @@
-
 import os
-import sys
-
-import plotly.graph_objects as go
 import streamlit as st
 import streamlit_authenticator as stauth
 
-st.set_page_config(
-    page_title="AI Room Designer",
-    page_icon="🏠",
-    layout="wide"
-)
+username = os.getenv("APP_USERNAME")
+name = os.getenv("APP_NAME")
+password_hash = os.getenv("APP_PASSWORD_HASH")
 
-# Allow imports when running: streamlit run frontend/app.py
-sys.path.append(
-    os.path.dirname(
-        os.path.dirname(os.path.abspath(__file__))
-    )
-)
+if not all([username, name, password_hash]):
+    st.error("Missing authentication environment variables.")
+    st.stop()
 
-from utils.extractor import extract_room_details
-from utils.layout_engine import place_furniture
-
-
-# Authentication
 credentials = {
-    username = os.getenv("APP_USERNAME")
-    name = os.getenv("APP_NAME")
-    password_hash = os.getenv("APP_PASSWORD_HASH")
-
-    st.write({
-        "username": username,
-        "name": name,
-        "password_exists": password_hash is not None
-    })
-
-    if not all([username, name, password_hash]):
-        st.error("Authentication environment variables are missing.")
-        st.stop()
-
-    credentials = {
-        "usernames": {
-            username: {
-                "name": name,
-                "password": password_hash,
-            }
+    "usernames": {
+        username: {
+            "name": name,
+            "password": password_hash,
         }
     }
 }
@@ -71,6 +41,25 @@ authenticator.logout("Logout", "sidebar")
 st.sidebar.success(
     f"Welcome, {st.session_state['name']}!"
 )
+
+import sys
+import plotly.graph_objects as go
+
+st.set_page_config(
+    page_title="AI Room Designer",
+    page_icon="🏠",
+    layout="wide"
+)
+
+# Allow imports when running: streamlit run frontend/app.py
+sys.path.append(
+    os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
+)
+
+from utils.extractor import extract_room_details
+from utils.layout_engine import place_furniture
 
 
 def add_box_wireframe(
