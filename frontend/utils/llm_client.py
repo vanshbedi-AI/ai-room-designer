@@ -1,5 +1,3 @@
-import os
-
 from dotenv import load_dotenv
 from openai import OpenAI
 from ollama import chat
@@ -7,12 +5,11 @@ from ollama import chat
 load_dotenv()
 
 
+import os
+
+
 def get_setting(key: str, default=None):
-    try:
-        import streamlit as st
-        return st.secrets.get(key, os.getenv(key, default))
-    except Exception:
-        return os.getenv(key, default)
+    return os.getenv(key, default)
 
 
 USE_OLLAMA = get_setting("USE_OLLAMA", "false").lower() == "true"
@@ -39,6 +36,13 @@ def query_ollama(prompt: str):
 
 
 def query_groq(prompt: str):
+
+    api_key = get_setting("GROQ_API_KEY")
+
+    if not api_key:
+        raise ValueError(
+            "GROQ_API_KEY environment variable is missing."
+        )
 
     client = OpenAI(
         api_key=get_setting("GROQ_API_KEY"),
