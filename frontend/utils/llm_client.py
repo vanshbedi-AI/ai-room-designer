@@ -7,6 +7,42 @@ load_dotenv()
 
 import os
 
+SYSTEM_PROMPT = """
+Return ONLY valid JSON.
+
+Use EXACTLY this schema:
+
+{
+  "room_type": "string",
+  "length": 0,
+  "width": 0,
+  "height": 9,
+  "paint_color": "string",
+  "flooring": "string",
+  "furniture": [
+    {
+      "type": "string",
+      "count": 1
+    }
+  ]
+}
+
+Rules:
+- furniture MUST be a list of objects.
+- Never return furniture as strings.
+- Every furniture item requires both "type" and "count".
+- Combine duplicates into a single object.
+
+Example:
+
+[
+  {"type": "floor lamp", "count": 2},
+  {"type": "indoor plant", "count": 3}
+]
+
+Do not include explanations or markdown.
+"""
+
 
 def get_setting(key: str, default=None):
     return os.getenv(key, default)
@@ -22,7 +58,7 @@ def query_ollama(prompt: str):
         messages=[
             {
                 "role": "system",
-                "content": "Return only valid JSON."
+                "content": SYSTEM_PROMPT
             },
             {
                 "role": "user",
@@ -58,7 +94,7 @@ def query_groq(prompt: str):
         messages=[
             {
                 "role": "system",
-                "content": "Return only valid JSON."
+                "content": SYSTEM_PROMPT
             },
             {
                 "role": "user",

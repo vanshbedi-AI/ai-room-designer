@@ -1,9 +1,8 @@
 import json
 from collections import Counter
 
-from utils.llm_client import query_ollama
-from utils.llm_client import query_llm
 from shared.schemas import RoomRequest
+from utils.llm_client import query_llm
 
 
 DEFAULT_ROOM = {
@@ -17,71 +16,48 @@ DEFAULT_ROOM = {
 }
 
 
-SYSTEM_PROMPT = """
-Return ONLY valid JSON.
+def normalize_furniture(furniture):
 
-Use EXACTLY this schema:
+    if not furniture:
+        return []
 
-{
-  "room_type": "string",
-  "length": 0,
-  "width": 0,
-  "height": 9,
-  "paint_color": "string",
-  "flooring": "string",
-  "furniture": [
-    {
-      "type": "string",
-      "count": 1
-    }
-  ]
-}
+    # Model returned:
+    # ["bed", "table", "table"]
 
-Rules:
-- furniture MUST be a list of objects.
-- Never return furniture as strings.
-- Every furniture item requires both "type" and "count".
-- Combine duplicates into a single object.
+    if isinstance(furniture[0], str):
 
-Example:
+        counts = Counter(furniture)
 
-[
-  {"type": "floor lamp", "count": 2},
-  {"type": "indoor plant", "count": 3}
-]
+        return [
+            {
+                "type": item,
+                "count": count
+            }
+            for item, count in counts.items()
+        ]
 
-Do not include explanations or markdown.
-"""
+    # Model already returned correct format
+    return furniture
 
 
-def extract_room_details(user_prompt: str) -> dict:
+def extract_room_details(user_prompt: str):
 
-    prompt = f"{SYSTEM_PROMPT}\n\nUser Input:\n{user_prompt}"
-
-    response = query_llm(prompt)
-
-    print("RAW MODEL OUTPUT:")
-    print(response)
+    response = query_llm(user_prompt)
 
     data = json.loads(response)
+
+    print("RAW LLM OUTPUT:", data)
 
     for key, value in DEFAULT_ROOM.items():
         data.setdefault(key, value)
 
-    furniture = data.get("furniture", [])
+    # IMPORTANT: normalize BEFORE validation
+    data["furniture"] = normalize_furniture(
+        data.get("furniture", [])
+    )
 
-    if furniture and isinstance(furniture[0], str):
-
-        counts = Counter(furniture)
-
-        data["furniture"] = [
-            {"type": item, "count": count}
-            for item, count in counts.items()
-        ]
+    print("NORMALIZED OUTPUT:", data)
 
     room = RoomRequest(**data)
 
     return room.model_dump()
-
-    print("RAW RESPONSE:")
-    print(data)
