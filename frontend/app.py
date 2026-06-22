@@ -5,6 +5,45 @@ import sys
 import plotly.graph_objects as go
 import streamlit as st
 
+import streamlit_authenticator as stauth
+
+credentials = {
+    "usernames": {
+        "demo_user": {
+            "name": st.secrets["credentials"]["usernames"]["demo_user"]["name"],
+            "password": st.secrets["credentials"]["usernames"]["demo_user"]["password"],
+        }
+    }
+}
+
+authenticator = stauth.Authenticate(
+    credentials,
+    "ai_room_designer",
+    "abcdef123456",
+    cookie_expiry_days=7,
+)
+
+authenticator.login()
+
+if st.session_state.get("authentication_status") is False:
+    st.error("Incorrect username or password.")
+    st.stop()
+
+if st.session_state.get("authentication_status") is None:
+    st.warning("Please log in.")
+    st.stop()
+
+if st.session_state["authentication_status"]:
+
+    authenticator.logout("Logout", "sidebar")
+
+    st.sidebar.success(
+        f"Welcome, {st.session_state['name']}!"
+    )
+
+    # Your existing app starts here
+
+
 # Allow imports when running: streamlit run frontend/app.py
 sys.path.append(
     os.path.dirname(
