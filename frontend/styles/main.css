@@ -1,0 +1,14 @@
+.block-container {
+    padding-top: 2rem;
+}
+
+.stButton button {
+    width: 100%;
+    border-radius: 12px;
+    height: 50px;
+    font-size: 18px;
+}
+
+textarea {
+    border-radius: 16px !important;
+}
