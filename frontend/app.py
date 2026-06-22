@@ -29,6 +29,12 @@ credentials = {
     name = os.getenv("APP_NAME")
     password_hash = os.getenv("APP_PASSWORD_HASH")
 
+    st.write({
+        "username": username,
+        "name": name,
+        "password_exists": password_hash is not None
+    })
+
     if not all([username, name, password_hash]):
         st.error("Authentication environment variables are missing.")
         st.stop()
