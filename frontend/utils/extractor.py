@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 
 from utils.llm_client import query_ollama
 from utils.llm_client import query_llm
@@ -19,7 +20,7 @@ DEFAULT_ROOM = {
 SYSTEM_PROMPT = """
 Return ONLY valid JSON.
 
-Use EXACTLY these keys:
+Use EXACTLY this schema:
 
 {
   "room_type": "string",
@@ -28,13 +29,28 @@ Use EXACTLY these keys:
   "height": 9,
   "paint_color": "string",
   "flooring": "string",
-  "furniture": []
+  "furniture": [
+    {
+      "type": "string",
+      "count": 1
+    }
+  ]
 }
 
-Do not create nested objects.
-Do not rename keys.
-Do not include markdown.
-Do not include explanations.
+Rules:
+- furniture MUST be a list of objects.
+- Never return furniture as strings.
+- Every furniture item requires both "type" and "count".
+- Combine duplicates into a single object.
+
+Example:
+
+[
+  {"type": "floor lamp", "count": 2},
+  {"type": "indoor plant", "count": 3}
+]
+
+Do not include explanations or markdown.
 """
 
 
@@ -52,6 +68,20 @@ def extract_room_details(user_prompt: str) -> dict:
     for key, value in DEFAULT_ROOM.items():
         data.setdefault(key, value)
 
+    furniture = data.get("furniture", [])
+
+    if furniture and isinstance(furniture[0], str):
+
+        counts = Counter(furniture)
+
+        data["furniture"] = [
+            {"type": item, "count": count}
+            for item, count in counts.items()
+        ]
+
     room = RoomRequest(**data)
 
     return room.model_dump()
+
+    print("RAW RESPONSE:")
+    print(data)
