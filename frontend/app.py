@@ -25,10 +25,20 @@ from utils.layout_engine import place_furniture
 
 # Authentication
 credentials = {
-    "usernames": {
-        os.environ["APP_USERNAME"]: {
-            "name": os.environ["APP_NAME"],
-            "password": os.environ["APP_PASSWORD_HASH"],
+    username = os.getenv("APP_USERNAME")
+    name = os.getenv("APP_NAME")
+    password_hash = os.getenv("APP_PASSWORD_HASH")
+
+    if not all([username, name, password_hash]):
+        st.error("Authentication environment variables are missing.")
+        st.stop()
+
+    credentials = {
+        "usernames": {
+            username: {
+                "name": name,
+                "password": password_hash,
+            }
         }
     }
 }
