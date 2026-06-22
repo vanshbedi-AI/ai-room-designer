@@ -52,24 +52,24 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=7,
 )
 
-authenticator.login()
+name, authentication_status, username = authenticator.login(
+    "Login",
+    "main"
+)
 
 auth_status = st.session_state.get("authentication_status")
 
-if auth_status is False:
+if authentication_status is False:
     st.error("Incorrect username or password.")
     st.stop()
 
-if auth_status is None:
+if authentication_status is None:
     st.warning("Please log in.")
     st.stop()
 
 authenticator.logout("Logout", "sidebar")
 
-st.sidebar.success(
-    f"Welcome, {st.session_state['name']}!"
-)
-
+st.sidebar.success(f"Welcome, {name}!")
 
 from utils.extractor import extract_room_details
 from utils.layout_engine import place_furniture
