@@ -1,49 +1,9 @@
 import os
+import sys
+
+import plotly.graph_objects as go
 import streamlit as st
 import streamlit_authenticator as stauth
-
-username = os.getenv("APP_USERNAME")
-name = os.getenv("APP_NAME")
-password_hash = os.getenv("APP_PASSWORD_HASH")
-
-if not all([username, name, password_hash]):
-    st.error("Missing authentication environment variables.")
-    st.stop()
-
-credentials = {
-    "usernames": {
-        username: {
-            "name": name,
-            "password": password_hash,
-        }
-    }
-}
-
-authenticator = stauth.Authenticate(
-    credentials,
-    "ai_room_designer_v2",
-    "abcdef123456",
-    cookie_expiry_days=7,
-)
-
-authenticator.login()
-
-if st.session_state.get("authentication_status") is False:
-    st.error("Incorrect username or password.")
-    st.stop()
-
-if st.session_state.get("authentication_status") is None:
-    st.warning("Please log in.")
-    st.stop()
-
-authenticator.logout("Logout", "sidebar")
-
-st.sidebar.success(
-    f"Welcome, {st.session_state['name']}!"
-)
-
-import sys
-import plotly.graph_objects as go
 
 st.set_page_config(
     page_title="AI Room Designer",
@@ -57,6 +17,59 @@ sys.path.append(
         os.path.dirname(os.path.abspath(__file__))
     )
 )
+
+from utils.extractor import extract_room_details
+from utils.layout_engine import place_furniture
+
+
+# -----------------------------
+# Authentication
+# -----------------------------
+username = os.getenv("APP_USERNAME")
+display_name = os.getenv("APP_NAME")
+password_hash = os.getenv("APP_PASSWORD_HASH")
+
+if not all([username, display_name, password_hash]):
+    st.error(
+        "Missing authentication environment variables. "
+        "Please configure APP_USERNAME, APP_NAME, and APP_PASSWORD_HASH in Render."
+    )
+    st.stop()
+
+credentials = {
+    "usernames": {
+        username: {
+            "name": display_name,
+            "password": password_hash,
+        }
+    }
+}
+
+authenticator = stauth.Authenticate(
+    credentials,
+    "ai_room_designer_v3",
+    "abcdef123456",
+    cookie_expiry_days=7,
+)
+
+authenticator.login()
+
+auth_status = st.session_state.get("authentication_status")
+
+if auth_status is False:
+    st.error("Incorrect username or password.")
+    st.stop()
+
+if auth_status is None:
+    st.warning("Please log in.")
+    st.stop()
+
+authenticator.logout("Logout", "sidebar")
+
+st.sidebar.success(
+    f"Welcome, {st.session_state['name']}!"
+)
+
 
 from utils.extractor import extract_room_details
 from utils.layout_engine import place_furniture
